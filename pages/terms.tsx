@@ -69,7 +69,7 @@ export default function Terms() {
           <h2>Contact</h2>
           <p>
             If you have questions about these Terms, contact us at{" "}
-            <a href="mailto:support@krowz.ca">support@krowz.ca</a>.
+            <a href="mailto:support@krowz.ca">hello@krowz.ca</a>.
           </p>
         </section>
       </main>

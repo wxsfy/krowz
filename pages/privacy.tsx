@@ -63,7 +63,7 @@ export default function PrivacyPolicy() {
           <h2>Contact</h2>
           <p>
             If you have questions about this Privacy Policy, contact us at{" "}
-            <a href="mailto:support@krowz.ca">support@krowz.ca</a>.
+            <a href="mailto:support@krowz.ca">hello@krowz.ca</a>.
           </p>
         </section>
       </main>
