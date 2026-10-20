@@ -96,7 +96,7 @@ export default function Home() {
       <header style={styles.header}>
         <div style={styles.headerInner}>
           <div style={styles.brand}>
-            <span style={styles.brandDot} />
+            <img src="/logo.png" alt="" width={28} height={28} style={styles.brandLogo} />
             <span style={styles.brandText}>Krowz</span>
           </div>
 
@@ -315,13 +315,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "space-between",
   },
   brand: { display: "flex", alignItems: "center", gap: 10 },
-  brandDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    background: GOLD,
-    boxShadow: "0 0 18px rgba(255,215,0,0.35)",
-  },
+  brandLogo: { width: 28, height: 28, borderRadius: 7, display: "block" },
   brandText: { fontWeight: 900, letterSpacing: 0.2 },
   headerRight: { display: "flex", alignItems: "center", gap: 12 },
   headerLink: { color: "#ddd", textDecoration: "none", fontWeight: 700, fontSize: 13 },

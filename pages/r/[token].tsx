@@ -76,8 +76,9 @@ export default function RedeemPage() {
           background: "#111",
         }}
       >
-        <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 28 }}>
-          Krowz Staff Verify
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src="/logo.png" alt="" width={40} height={40} style={{ borderRadius: 10, display: "block" }} />
+          <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 28 }}>Krowz Staff Verify</div>
         </div>
 
         <div style={{ marginTop: 10, color: "#bbb" }}>
