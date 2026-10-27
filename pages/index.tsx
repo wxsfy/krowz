@@ -56,10 +56,10 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Krowz – local deals in Windsor</title>
+        <title>Krowz – local deals, in your pocket</title>
         <meta
           name="description"
-          content="Real discounts at Windsor restaurants, cafés and dessert spots. Show the QR at the counter, staff scan it, done."
+          content="Real discounts at local restaurants, cafés and dessert spots. Show the QR at the counter, staff scan it, done."
         />
         {/* iPhone Safari shows a native "Open / Get" bar for the app at the top of the page. */}
         <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} />
@@ -84,7 +84,7 @@ export default function Home() {
         <main>
           <section className="hero wrap">
             <h1>
-              Windsor&apos;s deals,
+              Local deals,
               <br />
               in your pocket.
             </h1>
@@ -100,7 +100,7 @@ export default function Home() {
           <section id="deals" className="wrap board-section" aria-labelledby="deals-title">
             <div className="board-head">
               <h2 id="deals-title">Where you&apos;ll save</h2>
-              <p>Local spots across Windsor, with new ones joining.</p>
+              <p>Local spots near you, with new ones joining all the time.</p>
             </div>
             <ul className="board">
               {KINDS.map((k) => (
@@ -108,7 +108,6 @@ export default function Home() {
                   <div className="coupon-main">
                     <div className="coupon-where">
                       <span className="coupon-name">{k.kind}</span>
-                      <span className="coupon-cat">Windsor</span>
                     </div>
                     <p className="coupon-offer">{k.line}</p>
                   </div>
@@ -151,7 +150,7 @@ export default function Home() {
           <section id="restaurants" className="for-biz" aria-labelledby="biz-title">
             <div className="wrap biz-grid">
               <div className="biz-copy">
-                <h2 id="biz-title">Run a restaurant, café or dessert spot in Windsor?</h2>
+                <h2 id="biz-title">Run a restaurant, café or dessert spot?</h2>
                 <p>
                   Put a deal on Krowz and bring new customers through the door. Your staff verify each redemption by
                   scanning the customer&apos;s QR with a phone. No app to install and no hardware.
@@ -231,7 +230,7 @@ export default function Home() {
             <a href="/privacy">Privacy</a>
             <a href="mailto:hello@krowz.ca">hello@krowz.ca</a>
           </div>
-          <p>© {year} Krowz, Windsor, Ontario</p>
+          <p>© {year} Krowz</p>
         </footer>
       </div>
 
@@ -271,7 +270,7 @@ export default function Home() {
         .top {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 18px 20px;
+          padding: 16px 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -311,27 +310,27 @@ export default function Home() {
 
         /* hero */
         .hero {
-          padding-top: 72px;
-          padding-bottom: 56px;
+          padding-top: 32px;
+          padding-bottom: 30px;
         }
         h1 {
           font-family: var(--display);
           font-weight: 900;
           font-stretch: 72%;
-          font-size: clamp(56px, 10.5vw, 132px);
-          line-height: 0.92;
+          font-size: clamp(48px, 7vw, 88px);
+          line-height: 0.94;
           letter-spacing: -0.01em;
           margin: 0;
         }
         .lede {
           max-width: 34em;
-          margin: 26px 0 0;
-          font-size: 19px;
+          margin: 18px 0 0;
+          font-size: 18px;
           line-height: 1.55;
           color: #d6d6d6;
         }
         .hero-cta {
-          margin-top: 30px;
+          margin-top: 24px;
         }
         .badge {
           display: inline-block;
@@ -340,7 +339,7 @@ export default function Home() {
 
         /* coupon board */
         .board-section {
-          padding-top: 24px;
+          padding-top: 8px;
           padding-bottom: 72px;
         }
         .board-head {
@@ -350,8 +349,8 @@ export default function Home() {
           flex-wrap: wrap;
           gap: 8px 24px;
           border-top: 1px solid var(--line);
-          padding-top: 22px;
-          margin-bottom: 26px;
+          padding-top: 18px;
+          margin-bottom: 18px;
         }
         h2 {
           font-family: var(--display);
@@ -385,7 +384,7 @@ export default function Home() {
           border-radius: 6px;
         }
         .coupon-main {
-          padding: 18px 20px 20px;
+          padding: 16px 20px 18px;
           flex: 1;
         }
         .coupon-where {
@@ -405,11 +404,11 @@ export default function Home() {
           white-space: nowrap;
         }
         .coupon-offer {
-          margin: 14px 0 0;
+          margin: 10px 0 0;
           font-family: var(--display);
           font-weight: 900;
           font-stretch: 75%;
-          font-size: 34px;
+          font-size: 30px;
           line-height: 1;
         }
         /* the tear line, with a punched notch on each side */
@@ -656,8 +655,8 @@ export default function Home() {
             display: none;
           }
           .hero {
-            padding-top: 40px;
-            padding-bottom: 40px;
+            padding-top: 28px;
+            padding-bottom: 28px;
           }
           .lede {
             font-size: 17px;
@@ -666,7 +665,7 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
           .coupon-offer {
-            font-size: 30px;
+            font-size: 28px;
           }
           .for-biz {
             padding: 56px 0;
