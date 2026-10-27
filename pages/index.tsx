@@ -1,20 +1,22 @@
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { useState, type FormEvent } from "react";
 
 const APP_STORE_ID = "6784631221";
 const APP_STORE_URL = `https://apps.apple.com/ca/app/krowz/id${APP_STORE_ID}`;
 // Apple's official badge, loaded from Apple (their marketing guidelines don't allow a redrawn version).
-const APP_STORE_BADGE = "https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83";
+const APP_STORE_BADGE =
+  "https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83";
+
+// What Krowz covers, shown as coupons. Deliberately not tied to today's listings.
+const KINDS = [
+  { kind: "Restaurants", line: "Money off your meal", stub: "Dine in or take out" },
+  { kind: "Cafés", line: "Your usual order, for less", stub: "Coffee, drinks and bites" },
+  { kind: "Dessert spots", line: "Treat yourself for less", stub: "Sweets, ice cream and more" },
+];
 
 function AppStoreBadge({ height }: { height: number }) {
   return (
-    <a
-      href={APP_STORE_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Download Krowz on the App Store"
-      style={{ display: "inline-block", lineHeight: 0 }}
-    >
+    <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" aria-label="Download Krowz on the App Store" className="badge">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={APP_STORE_BADGE} alt="Download on the App Store" style={{ height, width: "auto", display: "block" }} />
     </a>
@@ -28,62 +30,9 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  // Responsive helpers (updates on resize)
-  const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-
-  useEffect(() => {
-    const update = () => {
-      const w = window.innerWidth;
-      setIsMobile(w <= 640);
-      setIsTablet(w > 640 && w <= 1024);
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const isBusiness = type === "business";
-
-  const contactMeta = useMemo(() => {
-    if (isBusiness) {
-      return {
-        title: "Contact",
-        desc: "Business owner — send a message. We’ll reply fast.",
-        namePh: "Restaurant / owner name",
-        msgPh: "Tell us about your business and what deal you’d like to offer...",
-        submit: "Send partnership request",
-      };
-    }
-    return {
-      title: "Contact",
-      desc: "User — send feedback or report an issue. We’ll reply fast.",
-      namePh: "Your name",
-      msgPh: "Tell us your feedback (or what went wrong) and we’ll fix it...",
-      submit: "Send feedback",
-    };
-  }, [isBusiness]);
-
-  const scrollToContact = () => {
-    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const handlePartnerClick = () => {
-    setType("business");
-    setStatus("idle");
-    scrollToContact();
-  };
-
-  const handleUserClick = () => {
-    setType("user");
-    setStatus("idle");
-    scrollToContact();
-  };
-
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (status === "sending") return;
-
     setStatus("sending");
     try {
       const res = await fetch("/api/contact", {
@@ -91,9 +40,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, name, email, message }),
       });
-
       if (!res.ok) throw new Error("failed");
-
       setStatus("sent");
       setName("");
       setEmail("");
@@ -103,381 +50,629 @@ export default function Home() {
     }
   };
 
-  const currentYear = new Date().getFullYear();
-
-  // Dynamic layout values
-  const h1Size = isMobile ? 44 : isTablet ? 50 : 56;
-  const heroPadTop = isMobile ? 32 : 56;
-  const containerMax = isTablet ? 980 : 1100;
-  const wideMax = isTablet ? 1100 : 1550;
+  const year = new Date().getFullYear();
+  const isBusiness = type === "business";
 
   return (
-    <div style={styles.page}>
+    <>
       <Head>
+        <title>Krowz – local deals in Windsor</title>
+        <meta
+          name="description"
+          content="Real discounts at Windsor restaurants, cafés and dessert spots. Show the QR at the counter, staff scan it, done."
+        />
         {/* iPhone Safari shows a native "Open / Get" bar for the app at the top of the page. */}
         <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} />
       </Head>
-      {/* Top bar */}
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.brand}>
-            <img src="/logo.png" alt="" width={28} height={28} style={styles.brandLogo} />
-            <span style={styles.brandText}>Krowz</span>
-          </div>
 
-          <div style={styles.headerRight}>
-            <a href="#contact" style={styles.headerLink}>
-              Contact
+      <div className="page">
+        <header className="top">
+          <a href="#" className="brand" aria-label="Krowz home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="" width={30} height={30} />
+            <span>Krowz</span>
+          </a>
+          <nav className="nav" aria-label="Main">
+            <a href="#deals">Deals</a>
+            <a href="#restaurants">For restaurants</a>
+            <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="nav-app">
+              Get the app
             </a>
-            <a href="mailto:hello@krowz.ca" style={styles.headerPill}>
-              hello@krowz.ca
-            </a>
-          </div>
-        </div>
-      </header>
+          </nav>
+        </header>
 
-      <main style={styles.main}>
-        {/* HERO */}
-        <div style={{ ...styles.container, maxWidth: containerMax }}>
-          <section style={{ ...styles.hero, paddingTop: heroPadTop }}>
-            <div style={styles.heroTag}>Based in Canada 🇨🇦</div>
-
-            <h1 style={{ ...styles.h1, fontSize: h1Size, lineHeight: isMobile ? 1.05 : 1.02 }}>
-              Save money on food.
+        <main>
+          <section className="hero wrap">
+            <h1>
+              Windsor&apos;s deals,
               <br />
-              <span style={styles.h1Soft}>Redeem in seconds.</span>
+              in your pocket.
             </h1>
-
-            <p style={{ ...styles.sub, fontSize: isMobile ? 15 : 16 }}>
-              Krowz gives users real discounts at local spots — and gives businesses measurable foot traffic.
+            <p className="lede">
+              Real discounts at local restaurants, cafés and dessert spots. Pick a deal in the app, show the QR at the
+              counter, and staff scan it.
             </p>
-
-            <div style={styles.badgeRow}>
-              <AppStoreBadge height={isMobile ? 52 : 56} />
-              <span style={styles.badgeNote}>Free on iPhone</span>
-            </div>
-
-            <div style={styles.ctaRow}>
-              <button
-                type="button"
-                onClick={handlePartnerClick}
-                style={{
-                  ...styles.primaryBtn,
-                  opacity: isBusiness ? 1 : 0.8,
-                  width: isMobile ? "100%" : "auto",
-                }}
-              >
-                Partner with Krowz
-              </button>
-
-              <button
-                type="button"
-                onClick={handleUserClick}
-                style={{
-                  ...styles.secondaryBtn,
-                  opacity: !isBusiness ? 1 : 0.8,
-                  width: isMobile ? "100%" : "auto",
-                }}
-              >
-                I&apos;m a user → feedback
-              </button>
+            <div className="hero-cta">
+              <AppStoreBadge height={54} />
             </div>
           </section>
-        </div>
 
-        {/* STEPS (responsive) */}
-        <div style={{ ...styles.wide, maxWidth: wideMax }}>
-          <div style={styles.steps}>
-            <div style={styles.stepCard}>
-              <div style={styles.stepTop}>01</div>
-              <div style={styles.stepTitle}>Pick a deal</div>
-              <div style={styles.stepText}>Restaurants & cafés</div>
-              <img src="/app/pick-a-deal.png" alt="Pick a deal" style={styles.stepImage} />
+          <section id="deals" className="wrap board-section" aria-labelledby="deals-title">
+            <div className="board-head">
+              <h2 id="deals-title">Where you&apos;ll save</h2>
+              <p>Local spots across Windsor, with new ones joining.</p>
             </div>
+            <ul className="board">
+              {KINDS.map((k) => (
+                <li key={k.kind} className="coupon">
+                  <div className="coupon-main">
+                    <div className="coupon-where">
+                      <span className="coupon-name">{k.kind}</span>
+                      <span className="coupon-cat">Windsor</span>
+                    </div>
+                    <p className="coupon-offer">{k.line}</p>
+                  </div>
+                  <div className="coupon-stub">
+                    <span>{k.stub}</span>
+                    <span className="coupon-how">In the app</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-            <div style={styles.stepCard}>
-              <div style={styles.stepTop}>02</div>
-              <div style={styles.stepTitle}>Show QR</div>
-              <div style={styles.stepText}>Customer present</div>
-              <img src="/app/show-qr.png" alt="Show QR" style={styles.stepImage} />
-            </div>
+          <section className="wrap how" aria-labelledby="how-title">
+            <h2 id="how-title">How it works</h2>
+            <ol className="shots">
+              <li>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/app/pick-a-deal.png" alt="A deal open in the Krowz app" />
+                <p>
+                  <strong>Pick a deal.</strong> Browse what&apos;s on near you.
+                </p>
+              </li>
+              <li>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/app/show-qr.png" alt="The Krowz QR code screen" />
+                <p>
+                  <strong>Show your QR</strong> at the counter, before you order.
+                </p>
+              </li>
+              <li>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/app/staff-verify.png" alt="The staff verification page" />
+                <p>
+                  <strong>Staff scan it</strong> with any phone camera. That&apos;s it.
+                </p>
+              </li>
+            </ol>
+          </section>
 
-            <div style={styles.stepCard}>
-              <div style={styles.stepTop}>03</div>
-              <div style={styles.stepTitle}>Staff scans</div>
-              <div style={styles.stepText}>Instant verify</div>
-              <img src="/app/staff-verify.png" alt="Staff verification" style={styles.stepImage} />
-            </div>
-          </div>
-        </div>
-
-        {/* CONTACT */}
-        <div style={{ ...styles.container, maxWidth: containerMax }}>
-          <section id="contact" style={styles.contactWrap}>
-            <div style={styles.contactCard}>
-              <div style={styles.contactHeader}>
-                <div>
-                  <div style={styles.contactTitle}>{contactMeta.title}</div>
-                  <div style={styles.contactDesc}>{contactMeta.desc}</div>
-                </div>
-
-                <div style={styles.contactMini}>
-                  <div style={styles.miniLabel}>Email</div>
-                  <a href="mailto:hello@krowz.ca" style={styles.miniValue}>
-                    hello@krowz.ca
-                  </a>
-                </div>
+          <section id="restaurants" className="for-biz" aria-labelledby="biz-title">
+            <div className="wrap biz-grid">
+              <div className="biz-copy">
+                <h2 id="biz-title">Run a restaurant, café or dessert spot in Windsor?</h2>
+                <p>
+                  Put a deal on Krowz and bring new customers through the door. Your staff verify each redemption by
+                  scanning the customer&apos;s QR with a phone. No app to install and no hardware.
+                </p>
+                <p>
+                  Tell us about your place and the deal you&apos;d like to run, and we&apos;ll get back to you. Or email{" "}
+                  <a href="mailto:hello@krowz.ca">hello@krowz.ca</a>.
+                </p>
               </div>
 
-              <form onSubmit={submit} style={styles.form}>
-                <div style={{ ...styles.grid2, gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr" }}>
-                  <div style={styles.field}>
-                    <label style={styles.label}>You are</label>
-                    <select
-                      value={type}
-                      onChange={(e) => {
-                        setType(e.target.value as "business" | "user");
-                        setStatus("idle");
-                      }}
-                      style={styles.input}
-                    >
-                      <option value="business">Business</option>
-                      <option value="user">User</option>
-                    </select>
-                  </div>
-
-                  <div style={styles.field}>
-                    <label style={styles.label}>Name</label>
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      style={styles.input}
-                      placeholder={contactMeta.namePh}
-                    />
-                  </div>
+              <form onSubmit={submit} className="form" aria-label="Contact Krowz">
+                <div className="who" role="radiogroup" aria-label="I am">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={isBusiness}
+                    className={isBusiness ? "on" : ""}
+                    onClick={() => {
+                      setType("business");
+                      setStatus("idle");
+                    }}
+                  >
+                    A business
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!isBusiness}
+                    className={!isBusiness ? "on" : ""}
+                    onClick={() => {
+                      setType("user");
+                      setStatus("idle");
+                    }}
+                  >
+                    A Krowz user
+                  </button>
                 </div>
 
-                <div style={styles.field}>
-                  <label style={styles.label}>Email</label>
+                <label>
+                  <span>{isBusiness ? "Business name" : "Your name"}</span>
+                  <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={120} />
+                </label>
+                <label>
+                  <span>Email</span>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    style={styles.input}
-                    placeholder="you@email.com"
                     type="email"
+                    maxLength={200}
+                    autoComplete="email"
                   />
-                </div>
+                </label>
+                <label>
+                  <span>{isBusiness ? "Your place and the deal you have in mind" : "Your feedback or what went wrong"}</span>
+                  <textarea value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={4000} rows={5} />
+                </label>
 
-                <div style={styles.field}>
-                  <label style={styles.label}>Message</label>
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    required
-                    style={{ ...styles.input, minHeight: 110, resize: "vertical" as const }}
-                    placeholder={contactMeta.msgPh}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={status === "sending"}
-                  style={{
-                    ...styles.submit,
-                    opacity: status === "sending" ? 0.7 : 1,
-                    cursor: status === "sending" ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {status === "sending" ? "Sending..." : contactMeta.submit}
+                <button type="submit" className="send" disabled={status === "sending"}>
+                  {status === "sending" ? "Sending…" : "Send message"}
                 </button>
-
-                {status === "sent" && <div style={styles.ok}>Sent. We’ll reply soon.</div>}
-
+                {status === "sent" && <p className="ok">Message sent. We&apos;ll reply soon.</p>}
                 {status === "error" && (
-                  <div style={styles.err}>
-                    Failed to send. Email us at{" "}
-                    <a href="mailto:hello@krowz.ca" style={styles.errLink}>
-                      hello@krowz.ca
-                    </a>
-                    .
-                  </div>
+                  <p className="err">
+                    Couldn&apos;t send that. Email us at <a href="mailto:hello@krowz.ca">hello@krowz.ca</a>.
+                  </p>
                 )}
               </form>
             </div>
-
-            <footer style={styles.footer}>
-              <div style={styles.footerLine} />
-              <div style={styles.footerBadge}>
-                <AppStoreBadge height={40} />
-              </div>
-              <div style={styles.footerText}>© {currentYear} Krowz</div>
-            </footer>
           </section>
-        </div>
-      </main>
-    </div>
+        </main>
+
+        <footer className="foot wrap">
+          <AppStoreBadge height={40} />
+          <div className="foot-links">
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="mailto:hello@krowz.ca">hello@krowz.ca</a>
+          </div>
+          <p>© {year} Krowz, Windsor, Ontario</p>
+        </footer>
+      </div>
+
+      <style jsx>{`
+        .page {
+          --bg: #050505;
+          --ink: #ffffff;
+          --muted: #a7a7a7;
+          --line: #2a2a2a;
+          --card: #111111;
+          --yellow: #ffd21f;
+          --coupon-ink: #050505;
+          --display: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          min-height: 100vh;
+          background: var(--bg);
+          color: var(--ink);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+        }
+        .wrap {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+        a {
+          color: inherit;
+        }
+        :global(a:focus-visible),
+        :global(button:focus-visible),
+        :global(input:focus-visible),
+        :global(textarea:focus-visible) {
+          outline: 2px solid var(--yellow);
+          outline-offset: 3px;
+        }
+
+        /* header */
+        .top {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 18px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+          font-family: var(--display);
+          font-weight: 800;
+          font-size: 22px;
+          font-stretch: 85%;
+        }
+        .brand img {
+          border-radius: 8px;
+          display: block;
+        }
+        .nav {
+          display: flex;
+          align-items: center;
+          gap: 22px;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        .nav a {
+          text-decoration: none;
+          color: var(--muted);
+        }
+        .nav a:hover {
+          color: var(--ink);
+        }
+        .nav .nav-app {
+          color: var(--yellow);
+        }
+
+        /* hero */
+        .hero {
+          padding-top: 72px;
+          padding-bottom: 56px;
+        }
+        h1 {
+          font-family: var(--display);
+          font-weight: 900;
+          font-stretch: 72%;
+          font-size: clamp(56px, 10.5vw, 132px);
+          line-height: 0.92;
+          letter-spacing: -0.01em;
+          margin: 0;
+        }
+        .lede {
+          max-width: 34em;
+          margin: 26px 0 0;
+          font-size: 19px;
+          line-height: 1.55;
+          color: #d6d6d6;
+        }
+        .hero-cta {
+          margin-top: 30px;
+        }
+        .badge {
+          display: inline-block;
+          line-height: 0;
+        }
+
+        /* coupon board */
+        .board-section {
+          padding-top: 24px;
+          padding-bottom: 72px;
+        }
+        .board-head {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px 24px;
+          border-top: 1px solid var(--line);
+          padding-top: 22px;
+          margin-bottom: 26px;
+        }
+        h2 {
+          font-family: var(--display);
+          font-weight: 800;
+          font-stretch: 80%;
+          font-size: clamp(30px, 4vw, 44px);
+          line-height: 1.02;
+          margin: 0;
+        }
+        .board-head p {
+          margin: 0;
+          color: var(--muted);
+          font-size: 15px;
+          font-weight: 600;
+        }
+        .board {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 18px;
+        }
+        .coupon {
+          --notch: 11px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          background: var(--yellow);
+          color: var(--coupon-ink);
+          border-radius: 6px;
+        }
+        .coupon-main {
+          padding: 18px 20px 20px;
+          flex: 1;
+        }
+        .coupon-where {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 12px;
+        }
+        .coupon-name {
+          font-weight: 800;
+          font-size: 15px;
+        }
+        .coupon-cat {
+          font-size: 13px;
+          font-weight: 600;
+          opacity: 0.7;
+          white-space: nowrap;
+        }
+        .coupon-offer {
+          margin: 14px 0 0;
+          font-family: var(--display);
+          font-weight: 900;
+          font-stretch: 75%;
+          font-size: 34px;
+          line-height: 1;
+        }
+        /* the tear line, with a punched notch on each side */
+        .coupon-stub {
+          position: relative;
+          border-top: 2px dashed rgba(5, 5, 5, 0.45);
+          padding: 12px 20px 14px;
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .coupon-stub::before,
+        .coupon-stub::after {
+          content: "";
+          position: absolute;
+          top: calc(-1 * var(--notch) - 1px);
+          width: calc(var(--notch) * 2);
+          height: calc(var(--notch) * 2);
+          border-radius: 50%;
+          background: var(--bg);
+        }
+        .coupon-stub::before {
+          left: calc(-1 * var(--notch));
+        }
+        .coupon-stub::after {
+          right: calc(-1 * var(--notch));
+        }
+        .coupon-how {
+          opacity: 0.7;
+          white-space: nowrap;
+        }
+
+        /* how it works */
+        .how {
+          padding-bottom: 88px;
+        }
+        .how h2 {
+          border-top: 1px solid var(--line);
+          padding-top: 22px;
+          margin-bottom: 28px;
+        }
+        .shots {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 28px;
+        }
+        .shots img {
+          width: 100%;
+          max-width: 250px;
+          display: block;
+          border-radius: 28px;
+          border: 1px solid var(--line);
+        }
+        .shots p {
+          margin: 14px 0 0;
+          color: var(--muted);
+          font-size: 16px;
+          line-height: 1.5;
+          max-width: 250px;
+        }
+        .shots strong {
+          color: var(--ink);
+        }
+
+        /* for restaurants */
+        .for-biz {
+          background: var(--card);
+          border-top: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+          padding: 72px 0;
+        }
+        .biz-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 56px;
+          align-items: start;
+        }
+        .biz-copy p {
+          color: #d6d6d6;
+          font-size: 17px;
+          line-height: 1.6;
+          margin: 18px 0 0;
+          max-width: 32em;
+        }
+        .biz-copy a {
+          color: var(--yellow);
+          font-weight: 700;
+        }
+        .form {
+          display: grid;
+          gap: 16px;
+        }
+        .who {
+          display: inline-flex;
+          justify-self: start;
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          padding: 3px;
+          background: var(--bg);
+        }
+        .who button {
+          border: 0;
+          background: none;
+          color: var(--muted);
+          font: inherit;
+          font-weight: 700;
+          font-size: 14px;
+          padding: 8px 14px;
+          border-radius: 7px;
+          cursor: pointer;
+        }
+        .who button.on {
+          background: var(--yellow);
+          color: var(--coupon-ink);
+        }
+        label {
+          display: grid;
+          gap: 7px;
+        }
+        label span {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--muted);
+        }
+        input,
+        textarea {
+          width: 100%;
+          background: var(--bg);
+          color: var(--ink);
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          padding: 12px 14px;
+          font: inherit;
+          font-size: 16px;
+        }
+        textarea {
+          resize: vertical;
+          min-height: 120px;
+        }
+        input:focus,
+        textarea:focus {
+          border-color: var(--yellow);
+        }
+        .send {
+          justify-self: start;
+          background: var(--yellow);
+          color: var(--coupon-ink);
+          border: 0;
+          border-radius: 10px;
+          padding: 14px 22px;
+          font: inherit;
+          font-weight: 800;
+          font-size: 16px;
+          cursor: pointer;
+        }
+        .send:disabled {
+          opacity: 0.6;
+          cursor: default;
+        }
+        .ok {
+          margin: 0;
+          color: #35d07f;
+          font-weight: 700;
+        }
+        .err {
+          margin: 0;
+          color: #ff4d4d;
+          font-weight: 700;
+        }
+        .err a {
+          color: inherit;
+        }
+
+        /* footer */
+        .foot {
+          padding-top: 40px;
+          padding-bottom: 48px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 18px 28px;
+        }
+        .foot-links {
+          display: flex;
+          gap: 20px;
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .foot-links a {
+          color: var(--muted);
+          text-decoration: none;
+        }
+        .foot-links a:hover {
+          color: var(--ink);
+        }
+        .foot p {
+          margin: 0 0 0 auto;
+          color: var(--muted);
+          font-size: 13px;
+        }
+
+        @media (max-width: 820px) {
+          .biz-grid {
+            grid-template-columns: 1fr;
+            gap: 32px;
+          }
+          /* phones: swipe sideways through the three screens */
+          .shots {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0 20px;
+            margin: 0 -20px;
+            padding: 0 20px 8px;
+            scrollbar-width: none;
+          }
+          .shots::-webkit-scrollbar {
+            display: none;
+          }
+          .shots li {
+            flex: 0 0 62%;
+            scroll-snap-align: start;
+          }
+          .shots img {
+            max-width: none;
+            border-radius: 22px;
+          }
+          .shots p {
+            font-size: 15px;
+          }
+          .foot p {
+            margin-left: 0;
+            width: 100%;
+          }
+        }
+        @media (max-width: 560px) {
+          .nav a:not(.nav-app) {
+            display: none;
+          }
+          .hero {
+            padding-top: 40px;
+            padding-bottom: 40px;
+          }
+          .lede {
+            font-size: 17px;
+          }
+          .board {
+            grid-template-columns: 1fr;
+          }
+          .coupon-offer {
+            font-size: 30px;
+          }
+          .for-biz {
+            padding: 56px 0;
+          }
+        }
+      `}</style>
+    </>
   );
 }
-
-const GOLD = "#FFD700";
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "#000",
-    color: "#fff",
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
-  },
-
-  header: {
-    position: "sticky",
-    top: 0,
-    zIndex: 20,
-    backdropFilter: "blur(10px)",
-    background: "rgba(0,0,0,0.65)",
-    borderBottom: "1px solid #111",
-  },
-  headerInner: {
-    maxWidth: 1600,
-    margin: "0 auto",
-    padding: "14px 18px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  brand: { display: "flex", alignItems: "center", gap: 10 },
-  brandLogo: { width: 28, height: 28, borderRadius: 7, display: "block" },
-  brandText: { fontWeight: 900, letterSpacing: 0.2 },
-  headerRight: { display: "flex", alignItems: "center", gap: 12 },
-  headerLink: { color: "#ddd", textDecoration: "none", fontWeight: 700, fontSize: 13 },
-  headerPill: {
-    color: "#000",
-    background: GOLD,
-    textDecoration: "none",
-    padding: "8px 10px",
-    borderRadius: 999,
-    fontWeight: 900,
-    fontSize: 13,
-  },
-
-  main: { width: "100%", padding: "24px 18px 60px" },
-
-  container: { maxWidth: 1100, margin: "0 auto", width: "100%" },
-  wide: { maxWidth: 1550, margin: "0 auto", width: "100%", paddingTop: 14 },
-
-  hero: { padding: "56px 0 10px" },
-  heroTag: {
-    display: "inline-block",
-    padding: "7px 10px",
-    borderRadius: 999,
-    border: "1px solid #222",
-    color: "#ccc",
-    fontWeight: 700,
-    fontSize: 12,
-  },
-  h1: { margin: "16px 0 10px", fontSize: 56, letterSpacing: -1.2, lineHeight: 1.02 },
-  h1Soft: { color: "#cfcfcf" },
-  sub: { margin: 0, maxWidth: 680, color: "#bdbdbd", fontSize: 16, lineHeight: 1.55 },
-
-  ctaRow: { display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 },
-  badgeRow: { display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 22 },
-  badgeNote: { color: "#9b9b9b", fontSize: 13, fontWeight: 800 },
-  footerBadge: { display: "flex", justifyContent: "center", paddingTop: 22 },
-  primaryBtn: {
-    background: GOLD,
-    color: "#000",
-    padding: "12px 16px",
-    borderRadius: 14,
-    fontWeight: 900,
-    border: "none",
-    cursor: "pointer",
-  },
-  secondaryBtn: {
-    background: "transparent",
-    color: "#fff",
-    padding: "12px 16px",
-    borderRadius: 14,
-    fontWeight: 900,
-    border: "1px solid #222",
-    cursor: "pointer",
-  },
-
-  // auto-fit makes it 1-col on mobile, 2 on tablet, 3 on desktop
-  steps: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: 14,
-    marginTop: 28,
-  },
-
-  stepCard: {
-    border: "1px solid #111",
-    background: "#0b0b0b",
-    borderRadius: 18,
-    padding: 16,
-  },
-  stepTop: { color: GOLD, fontWeight: 900, fontSize: 12, letterSpacing: 1.4 },
-  stepTitle: { marginTop: 10, fontWeight: 900, fontSize: 16 },
-  stepText: { marginTop: 6, color: "#a7a7a7", fontSize: 13 },
-
-  // makes screenshots look clean on mobile + desktop
-  stepImage: {
-    width: "100%",
-    marginTop: 14,
-    borderRadius: 14,
-    border: "1px solid #151515",
-    display: "block",
-    boxShadow: "0 0 40px rgba(255,215,0,0.05)",
-  },
-
-  contactWrap: { paddingTop: 40 },
-  contactCard: { border: "1px solid #111", background: "#0b0b0b", borderRadius: 18, padding: 18 },
-  contactHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 16,
-    alignItems: "flex-start",
-    flexWrap: "wrap",
-  },
-  contactTitle: { fontWeight: 900, fontSize: 22 },
-  contactDesc: { marginTop: 6, color: "#a7a7a7", maxWidth: 560, fontSize: 13, lineHeight: 1.5 },
-
-  contactMini: { border: "1px solid #141414", borderRadius: 14, padding: 12, minWidth: 220 },
-  miniLabel: { color: "#888", fontSize: 12, fontWeight: 800 },
-  miniValue: { display: "block", marginTop: 6, color: GOLD, textDecoration: "none", fontWeight: 900 },
-
-  form: { marginTop: 14, display: "grid", gap: 12 },
-  grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-  field: { display: "grid", gap: 6 },
-  label: { fontSize: 12, fontWeight: 900, color: "#cfcfcf" },
-  input: {
-    width: "100%",
-    padding: "12px 12px",
-    borderRadius: 12,
-    border: "1px solid #151515",
-    background: "#070707",
-    color: "#fff",
-    outline: "none",
-  },
-
-  submit: {
-    width: "100%",
-    padding: "14px 16px",
-    borderRadius: 12,
-    border: "none",
-    background: GOLD,
-    color: "#000",
-    fontWeight: 900,
-    fontSize: 15,
-  },
-
-  ok: { color: "#00ff6a", fontWeight: 900, fontSize: 13 },
-  err: { color: "#ff5b5b", fontWeight: 900, fontSize: 13 },
-  errLink: { color: GOLD, textDecoration: "none" },
-
-  footer: { paddingTop: 26 },
-  footerLine: { height: 1, background: "#111", width: "100%" },
-  footerText: { paddingTop: 14, textAlign: "center", color: "#777", fontSize: 12, fontWeight: 800 },
-};
