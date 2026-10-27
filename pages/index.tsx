@@ -1,4 +1,25 @@
+import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
+
+const APP_STORE_ID = "6784631221";
+const APP_STORE_URL = `https://apps.apple.com/ca/app/krowz/id${APP_STORE_ID}`;
+// Apple's official badge, loaded from Apple (their marketing guidelines don't allow a redrawn version).
+const APP_STORE_BADGE = "https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83";
+
+function AppStoreBadge({ height }: { height: number }) {
+  return (
+    <a
+      href={APP_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Download Krowz on the App Store"
+      style={{ display: "inline-block", lineHeight: 0 }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={APP_STORE_BADGE} alt="Download on the App Store" style={{ height, width: "auto", display: "block" }} />
+    </a>
+  );
+}
 
 export default function Home() {
   const [type, setType] = useState<"business" | "user">("business");
@@ -92,6 +113,10 @@ export default function Home() {
 
   return (
     <div style={styles.page}>
+      <Head>
+        {/* iPhone Safari shows a native "Open / Get" bar for the app at the top of the page. */}
+        <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} />
+      </Head>
       {/* Top bar */}
       <header style={styles.header}>
         <div style={styles.headerInner}>
@@ -126,6 +151,11 @@ export default function Home() {
             <p style={{ ...styles.sub, fontSize: isMobile ? 15 : 16 }}>
               Krowz gives users real discounts at local spots — and gives businesses measurable foot traffic.
             </p>
+
+            <div style={styles.badgeRow}>
+              <AppStoreBadge height={isMobile ? 52 : 56} />
+              <span style={styles.badgeNote}>Free on iPhone</span>
+            </div>
 
             <div style={styles.ctaRow}>
               <button
@@ -279,6 +309,9 @@ export default function Home() {
 
             <footer style={styles.footer}>
               <div style={styles.footerLine} />
+              <div style={styles.footerBadge}>
+                <AppStoreBadge height={40} />
+              </div>
               <div style={styles.footerText}>© {currentYear} Krowz</div>
             </footer>
           </section>
@@ -349,6 +382,9 @@ const styles: Record<string, React.CSSProperties> = {
   sub: { margin: 0, maxWidth: 680, color: "#bdbdbd", fontSize: 16, lineHeight: 1.55 },
 
   ctaRow: { display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 },
+  badgeRow: { display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 22 },
+  badgeNote: { color: "#9b9b9b", fontSize: 13, fontWeight: 800 },
+  footerBadge: { display: "flex", justifyContent: "center", paddingTop: 22 },
   primaryBtn: {
     background: GOLD,
     color: "#000",
