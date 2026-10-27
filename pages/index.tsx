@@ -83,6 +83,7 @@ export default function Home() {
 
         <main>
           <section className="hero wrap">
+            <div className="hero-copy">
             <h1>
               Local deals,
               <br />
@@ -94,6 +95,11 @@ export default function Home() {
             </p>
             <div className="hero-cta">
               <AppStoreBadge height={54} />
+            </div>
+            </div>
+            <div className="hero-phone" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/app/show-qr.png" alt="" />
             </div>
           </section>
 
@@ -243,7 +249,7 @@ export default function Home() {
           --card: #111111;
           --yellow: #ffd21f;
           --coupon-ink: #050505;
-          --display: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Arial, sans-serif;
           min-height: 100vh;
           background: var(--bg);
           color: var(--ink);
@@ -282,9 +288,9 @@ export default function Home() {
           gap: 10px;
           text-decoration: none;
           font-family: var(--display);
-          font-weight: 800;
-          font-size: 22px;
-          font-stretch: 85%;
+          font-weight: 900;
+          font-size: 21px;
+          letter-spacing: -0.02em;
         }
         .brand img {
           border-radius: 8px;
@@ -310,17 +316,44 @@ export default function Home() {
 
         /* hero */
         .hero {
-          padding-top: 32px;
-          padding-bottom: 30px;
+          padding-top: 36px;
+          padding-bottom: 28px;
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: end;
+          gap: 40px;
         }
         h1 {
           font-family: var(--display);
           font-weight: 900;
-          font-stretch: 72%;
-          font-size: clamp(48px, 7vw, 88px);
-          line-height: 0.94;
-          letter-spacing: -0.01em;
+          font-size: clamp(44px, 6vw, 76px);
+          line-height: 1;
+          letter-spacing: -0.035em;
           margin: 0;
+        }
+        /* the app, cropped at the bottom and fading into the page */
+        .hero-phone {
+          width: 205px;
+          height: 325px;
+          overflow: hidden;
+          border: 1px solid var(--line);
+          border-bottom: 0;
+          border-radius: 30px 30px 0 0;
+          position: relative;
+          margin-right: 24px;
+        }
+        .hero-phone img {
+          width: 100%;
+          display: block;
+        }
+        .hero-phone::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 90px;
+          background: linear-gradient(to bottom, rgba(5, 5, 5, 0), var(--bg));
         }
         .lede {
           max-width: 34em;
@@ -354,10 +387,10 @@ export default function Home() {
         }
         h2 {
           font-family: var(--display);
-          font-weight: 800;
-          font-stretch: 80%;
-          font-size: clamp(30px, 4vw, 44px);
-          line-height: 1.02;
+          font-weight: 900;
+          font-size: clamp(28px, 3.4vw, 38px);
+          line-height: 1.08;
+          letter-spacing: -0.03em;
           margin: 0;
         }
         .board-head p {
@@ -407,9 +440,9 @@ export default function Home() {
           margin: 10px 0 0;
           font-family: var(--display);
           font-weight: 900;
-          font-stretch: 75%;
-          font-size: 30px;
-          line-height: 1;
+          font-size: 25px;
+          line-height: 1.12;
+          letter-spacing: -0.025em;
         }
         /* the tear line, with a punched notch on each side */
         .coupon-stub {
@@ -616,6 +649,12 @@ export default function Home() {
         }
 
         @media (max-width: 820px) {
+          .hero {
+            grid-template-columns: 1fr;
+          }
+          .hero-phone {
+            display: none;
+          }
           .biz-grid {
             grid-template-columns: 1fr;
             gap: 32px;
@@ -665,7 +704,7 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
           .coupon-offer {
-            font-size: 28px;
+            font-size: 24px;
           }
           .for-biz {
             padding: 56px 0;
